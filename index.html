@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#003366" />
+  <meta name="description" content="A modular PWA for inquiry intake, async human review, payment handoff, and live monitor controls." />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <title>Saltwater Moon — Sarah Pierce</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --surface: #ffffff;
+      --ink: #1f2937;
+      --muted: #6b7280;
+      --line: #dbe3ea;
+      --theme: #003366;
+      --accent: #17a2b8;
+      --accent-soft: #eaf8ff;
+      --success: #117a4d;
+      --warn: #b76e00;
+      --danger: #b42318;
+      --shadow: 0 18px 44px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; font-family: Inter, Arial, sans-serif; background: var(--bg); color: var(--ink); }
+    a { color: inherit; }
+    button, input, textarea, select { font: inherit; }
+    .app-shell { max-width: 1240px; margin: 0 auto; padding: 16px; }
+    .topbar { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(10px); background: rgba(246,248,251,0.82); border-bottom: 1px solid rgba(219,227,234,0.8); }
+    .topbar-inner { max-width: 1240px; margin: 0 auto; padding: 12px 16px; display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+    .brand { display: flex; gap: 12px; align-items: center; }
+    .brand-badge { width: 42px; height: 42px; border-radius: 14px; background: linear-gradient(135deg, var(--theme), var(--accent)); display: grid; place-items: center; color: white; font-weight: 800; box-shadow: var(--shadow); }
+    .brand h1 { margin: 0; font-size: 1rem; line-height: 1.1; }
+    .brand small { display: block; color: var(--muted); }
+    .nav { display: flex; flex-wrap: wrap; gap: 8px; }
+    .nav button { border: 1px solid var(--line); background: white; padding: 10px 14px; border-radius: 999px; cursor: pointer; }
+    .nav button.active { background: var(--theme); color: white; border-color: var(--theme); }
+    .hero { margin-top: 20px; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 18px; }
+    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .hero-card { padding: 24px; }
+    .kicker { display: inline-block; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.02em; color: var(--theme); background: var(--accent-soft); padding: 8px 12px; border-radius: 999px; }
+    h2 { margin: 14px 0 10px; font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.05; }
+    .subtle { color: var(--muted); font-size: 1rem; line-height: 1.6; }
+    .hero-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 18px; }
+    .mini-stat { background: #fbfcfe; border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
+    .mini-stat strong { display: block; font-size: 1.2rem; margin-bottom: 5px; }
+    .stack { display: grid; gap: 14px; }
+    .card { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .service-price { font-size: 1.4rem; font-weight: 800; margin: 8px 0; color: var(--theme); }
+    .button-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    .btn { border: none; border-radius: 12px; padding: 12px 16px; cursor: pointer; font-weight: 700; }
+    .btn-primary { background: var(--theme); color: white; }
+    .btn-secondary { background: white; color: var(--theme); border: 1px solid var(--theme); }
+    .btn-soft { background: var(--accent-soft); color: var(--theme); }
+    .section { margin-top: 18px; padding: 20px; }
+    .section h3 { margin: 0 0 10px; font-size: 1.15rem; }
+    .view { display: none; }
+    .view.active { display: block; }
+    label { display: block; font-size: 0.9rem; font-weight: 700; margin-bottom: 6px; }
+    input, textarea, select { width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: white; }
+    textarea { min-height: 110px; resize: vertical; }
+    .list { display: grid; gap: 12px; }
+    .pill { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 7px 12px; font-size: 0.82rem; font-weight: 700; }
+    .pill.pending { background: #fff5e8; color: var(--warn); }
+    .pill.approved { background: #eafaf2; color: var(--success); }
+    .pill.blocked { background: #fdecec; color: var(--danger); }
+    .log { max-height: 320px; overflow: auto; }
+    .log-item, .task-item, .lead-item { border: 1px solid var(--line); border-radius: 14px; padding: 14px; background: #fcfdff; }
+    .task-meta, .lead-meta { color: var(--muted); font-size: 0.9rem; margin: 6px 0 12px; }
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .monitor-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 14px; }
+    .codebox { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: #0f172a; color: #e2e8f0; border-radius: 14px; padding: 14px; overflow: auto; font-size: 0.85rem; }
+    .banner { margin-top: 16px; padding: 14px 16px; border-radius: 16px; background: linear-gradient(90deg, rgba(255,255,255,0.7), rgba(255,255,255,1)), linear-gradient(135deg, var(--accent-soft), white); border: 1px solid var(--line); }
+    .footer-note { margin: 20px 0 6px; color: var(--muted); font-size: 0.92rem; text-align: center; }
+    .tiny { font-size: 0.82rem; color: var(--muted); }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--success); }
+    @media (max-width: 940px) {
+      .hero, .grid-3, .grid-2, .split, .monitor-grid { grid-template-columns: 1fr; }
+      .topbar-inner { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-badge">AI</div>
+        <div>
+          <h1>Saltwater Moon — Sarah Pierce</h1>
+          <small>PWA + modular automation shell + human approval API</small>
+        </div>
+      </div>
+      <nav class="nav" aria-label="Primary">
+        <button class="active" data-view-btn="client">Client Landing</button>
+        <button data-view-btn="dashboard">Operator Dashboard</button>
+        <button data-view-btn="monitor">Monitor + Guardrails</button>
+      </nav>
+    </div>
+  </div>
+
+  <main class="app-shell">
+    <section class="hero view active" id="client">
+      <div class="hero-card panel">
+        <span class="kicker">Session-booking spiritual guidance automation</span>
+        <h2>Clarity you can feel. Bookings, follow-up, and approvals all in one human-safe system.</h2>
+        <p class="subtle">A modular PWA for inquiry intake, async human review, payment handoff, and live monitor controls.</p>
+        <div class="hero-grid">
+          <div class="mini-stat"><strong>Async</strong><span class="tiny">Every client action becomes a trackable event.</span></div>
+          <div class="mini-stat"><strong>Human API</strong><span class="tiny">AI drafts. Human approves. Automations continue safely.</span></div>
+          <div class="mini-stat"><strong>PWA Ready</strong><span class="tiny">Installable app with offline shell, manifest, and service worker.</span></div>
+        </div>
+        <div class="banner">
+          <strong><span class="status-dot"></span> Automation posture: ready for webhook wiring</strong>
+          <div class="tiny">This front-end already includes modular endpoint config, local queue simulation, approval tasks, and safety states so you can connect Make, Zapier, n8n, or custom APIs next.</div>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="panel section">
+          <h3>Offers</h3>
+          <div class="grid-3">
+            <div class="card"><strong>Quick Pull</strong><div class="service-price">$35</div><div class="tiny">Lead capture + qualification + approval step</div></div>
+            <div class="card"><strong>Deep Dive</strong><div class="service-price">$85</div><div class="tiny">AI drafts response, human validates, then payment handoff</div></div>
+            <div class="card"><strong>Monthly Subscription</strong><div class="service-price">$55/mo</div><div class="tiny">Subscription-friendly recurring workflow</div></div>
+          </div>
+        </div>
+        <div class="panel section">
+          <h3>Submit a booking</h3>
+          <div class="grid-2">
+            <div>
+              <label>Name</label>
+              <input id="leadName" placeholder="Client name" />
+            </div>
+            <div>
+              <label>Email</label>
+              <input id="leadEmail" placeholder="client@email.com" />
+            </div>
+          </div>
+          <div class="grid-2" style="margin-top:12px;">
+            <div>
+              <label>Session type</label>
+              <input id="leadType" placeholder="Quick Pull, Deep Dive, monthly check-in…" />
+            </div>
+            <div>
+              <label>Budget / plan</label>
+              <select id="leadBudget">
+                <option>$35</option>
+                <option>$85</option>
+                <option>$55/mo</option>
+                <option>Custom Quote</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:12px;">
+            <label>Client notes</label>
+            <textarea id="leadNotes" placeholder="Share what you want clarity on, timing, and any preferences for the session."></textarea>
+          </div>
+          <div class="button-row">
+            <button class="btn btn-primary" id="submitLeadBtn">Book a Session</button>
+            <button class="btn btn-secondary" id="seedDemoBtn">Seed demo activity</button>
+          </div>
+          <p class="tiny">Submitting here creates a lead, generates a human review task, and logs the async event flow.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="dashboard">
+      <div class="grid-3">
+        <div class="panel section"><h3>Approved</h3><div id="statApproved" class="service-price">0</div><div class="tiny">Human-cleared actions</div></div>
+        <div class="panel section"><h3>Pending</h3><div id="statPending" class="service-price">0</div><div class="tiny">Waiting on human API action</div></div>
+        <div class="panel section"><h3>Revenue Snapshot</h3><div id="statRevenue" class="service-price">$425</div><div class="tiny">Editable placeholder until live billing is connected</div></div>
+      </div>
+      <div class="split" style="margin-top:16px;">
+        <div class="panel section">
+          <h3>Sarah's queue</h3>
+          <p class="subtle">Approve bookings, review AI-drafted follow-ups, and control every client-facing action.</p>
+          <div id="taskList" class="list"></div>
+        </div>
+        <div class="panel section">
+          <h3>Incoming leads</h3>
+          <div id="leadList" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="monitor">
+      <div class="monitor-grid">
+        <div class="stack">
+          <div class="panel section">
+            <h3>Live activity feed</h3>
+            <div id="activityLog" class="list log"></div>
+          </div>
+          <div class="panel section">
+            <h3>Guardrails</h3>
+            <div class="grid-2">
+              <div class="card"><strong>AI can</strong><div class="tiny">Qualify leads, draft replies, prepare invoices, create human tasks, log events, queue post-approval actions.</div></div>
+              <div class="card"><strong>AI cannot</strong><div class="tiny">Change pricing, send payment links, modify promises, or message clients after pause mode without human approval.</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="panel section">
+            <h3>Xavier's control panel</h3>
+            <div class="list">
+              <div class="task-item">
+                <strong>Automation mode</strong>
+                <div class="task-meta">Client-facing actions require human approval unless explicit safe-autonomy is enabled.</div>
+                <div class="button-row">
+                  <button class="btn btn-soft" id="togglePauseBtn">Pause automation</button>
+                  <button class="btn btn-secondary" id="toggleAutonomyBtn">Toggle safe autonomy</button>
+                </div>
+              </div>
+              <div class="task-item">
+                <strong>Endpoint registry</strong>
+                <div class="task-meta">Drop in your actual URLs when you connect Make, Zapier, n8n, or custom API routes.</div>
+                <div class="codebox" id="endpointBox"></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel section">
+            <h3>Human API contract</h3>
+            <div class="codebox" id="humanApiBox"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <p class="footer-note">Install this app from your browser menu once hosted. Works best on GitHub Pages or Google Cloud Storage. Google Sites is not the right fit for a full standalone PWA.</p>
+  </main>
+
+  <script>
+    const APP_KEY = 'saltwater-moon-sarah-pierce-pwa-store-v1';
+    const appConfig = {
+      brand: 'Saltwater Moon — Sarah Pierce',
+      operator: 'Sarah',
+      monitor: 'Xavier',
+      safeAutonomy: false,
+      paused: false,
+      services: [
+        { name: 'Quick Pull', price: '$35' },
+        { name: 'Deep Dive', price: '$85' },
+        { name: 'Monthly Subscription', price: '$55/mo' }
+      ],
+      endpoints: {
+        leadIntake: 'https://your-automation-endpoint.example/lead-intake',
+        humanTaskUpsert: 'https://your-automation-endpoint.example/human-task',
+        paymentLinkCreate: 'https://your-automation-endpoint.example/payment-link',
+        outboundMessageDraft: 'https://your-automation-endpoint.example/draft-message',
+        analyticsEvent: 'https://your-automation-endpoint.example/analytics-event'
+      },
+      rules: {
+        paymentLinksRequireApproval: true,
+        pricingChangesRequireApproval: true,
+        outboundClientMessagesRequireApproval: true,
+        autoPauseOnSafetyViolation: true
+      }
+    };
+
+    const initialState = {
+      leads: [],
+      tasks: [],
+      activity: [
+        { id: crypto.randomUUID(), at: new Date().toISOString(), type: 'system', text: 'PWA booted. Offline shell ready. Awaiting live endpoint wiring.' }
+      ]
+    };
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(APP_KEY);
+        if (!raw) return structuredClone(initialState);
+        const parsed = JSON.parse(raw);
+        return { ...structuredClone(initialState), ...parsed };
+      } catch (e) {
+        return structuredClone(initialState);
+      }
+    }
+
+    let state = loadState();
+
+    function saveState() {
+      localStorage.setItem(APP_KEY, JSON.stringify(state));
+    }
+
+    function moneyValue(price) {
+      const match = String(price).match(/\$(\d+)/);
+      return match ? Number(match[1]) : 0;
+    }
+
+    function render() {
+      renderStats();
+      renderTasks();
+      renderLeads();
+      renderActivity();
+      renderEndpointBoxes();
+    }
+
+    function renderStats() {
+      const approved = state.tasks.filter(t => t.status === 'approved').length;
+      const pending = state.tasks.filter(t => t.status === 'pending').length;
+      const revenue = state.leads.filter(l => l.status === 'approved').reduce((sum, l) => sum + moneyValue(l.budget), 0);
+      document.getElementById('statApproved').textContent = approved;
+      document.getElementById('statPending').textContent = pending;
+      document.getElementById('statRevenue').textContent = revenue ? ('$' + revenue) : '$425';
+    }
+
+    function renderTasks() {
+      const el = document.getElementById('taskList');
+      if (!state.tasks.length) {
+        el.innerHTML = '<div class="task-item">No human tasks yet. New inquiries will appear here.</div>';
+        return;
+      }
+      el.innerHTML = state.tasks.slice().reverse().map(task => `
+        <div class="task-item">
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;">
+            <strong>${task.title}</strong>
+            <span class="pill ${task.status}">${task.status}</span>
+          </div>
+          <div class="task-meta">Lead: ${task.leadName} · Created: ${new Date(task.createdAt).toLocaleString()}</div>
+          <div>${task.summary}</div>
+          ${task.status === 'pending' ? `<div class="button-row"><button class="btn btn-primary" onclick="approveTask('${task.id}')">Approve</button><button class="btn btn-secondary" onclick="rejectTask('${task.id}')">Reject</button></div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function renderLeads() {
+      const el = document.getElementById('leadList');
+      if (!state.leads.length) {
+        el.innerHTML = '<div class="lead-item">No leads yet. Submit one from the landing page to test the full async flow.</div>';
+        return;
+      }
+      el.innerHTML = state.leads.slice().reverse().map(lead => {
+        const visualState = lead.status === 'approved' ? 'approved' : (lead.status === 'rejected' ? 'blocked' : 'pending');
+        return `
+          <div class="lead-item">
+            <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;">
+              <strong>${lead.name}</strong>
+              <span class="pill ${visualState}">${lead.status}</span>
+            </div>
+            <div class="lead-meta">${lead.email} · ${lead.type} · ${lead.budget}</div>
+            <div class="tiny">${lead.notes}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderActivity() {
+      const el = document.getElementById('activityLog');
+      el.innerHTML = state.activity.slice().reverse().map(item => `
+        <div class="log-item">
+          <strong>${item.type}</strong>
+          <div class="task-meta">${new Date(item.at).toLocaleString()}</div>
+          <div>${item.text}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderEndpointBoxes() {
+      document.getElementById('endpointBox').textContent = JSON.stringify(appConfig.endpoints, null, 2);
+      document.getElementById('humanApiBox').textContent = JSON.stringify({
+        task_shape: {
+          id: 'uuid',
+          title: 'Human approval task',
+          lead_id: 'uuid',
+          decision_required: ['approve', 'reject'],
+          escalation: 'pause automation on ambiguity or safety violation'
+        },
+        async_flow: [
+          '1. AI logs intake event',
+          '2. AI creates or updates human task',
+          '3. Human approves or rejects',
+          '4. Automation continues only within rule set',
+          '5. All actions remain visible in monitor feed'
+        ],
+        guardrails: appConfig.rules,
+        paused: appConfig.paused,
+        safeAutonomy: appConfig.safeAutonomy
+      }, null, 2);
+    }
+
+    function log(type, text) {
+      state.activity.push({ id: crypto.randomUUID(), at: new Date().toISOString(), type, text });
+      saveState();
+      renderActivity();
+    }
+
+    function submitLead(payload) {
+      const lead = {
+        id: crypto.randomUUID(),
+        name: payload.name,
+        email: payload.email,
+        type: payload.type,
+        budget: payload.budget,
+        notes: payload.notes,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      };
+      const task = {
+        id: crypto.randomUUID(),
+        leadId: lead.id,
+        leadName: lead.name,
+        title: `Approve ${lead.type || 'booking'} workflow`,
+        summary: 'Review session fit and timing. Approve payment link before sending.',
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      };
+      state.leads.push(lead);
+      state.tasks.push(task);
+      saveState();
+      log('lead_intake', `New ${lead.type || 'booking'} from ${lead.name} captured and queued for human review.`);
+      log('human_task', `Approval task created for ${lead.name}. Endpoint placeholder: ${appConfig.endpoints.humanTaskUpsert}`);
+      render();
+    }
+
+    function approveTask(id) {
+      const task = state.tasks.find(t => t.id === id);
+      if (!task) return;
+      task.status = 'approved';
+      const lead = state.leads.find(l => l.id === task.leadId);
+      if (lead) lead.status = 'approved';
+      saveState();
+      log('approval', `Human approved ${task.title}. Safe next action: draft message plus payment handoff.`);
+      if (!appConfig.paused) {
+        log('automation', `Queued post-approval automation to ${appConfig.endpoints.paymentLinkCreate}`);
+      } else {
+        log('paused', 'Automation remained paused after approval. Manual release required.');
+      }
+      render();
+    }
+
+    function rejectTask(id) {
+      const task = state.tasks.find(t => t.id === id);
+      if (!task) return;
+      task.status = 'blocked';
+      const lead = state.leads.find(l => l.id === task.leadId);
+      if (lead) lead.status = 'rejected';
+      saveState();
+      log('rejection', `Human rejected ${task.title}. Workflow stopped and flagged for follow-up.`);
+      render();
+    }
+
+    function seedDemoActivity() {
+      submitLead({
+        name: 'Sarah Demo Client',
+        email: 'demo@example.com',
+        type: 'Quick Pull',
+        budget: '$35',
+        notes: 'Demo seeded to show the human-in-the-loop workflow.'
+      });
+    }
+
+    document.getElementById('submitLeadBtn').addEventListener('click', () => {
+      const name = document.getElementById('leadName').value.trim();
+      const email = document.getElementById('leadEmail').value.trim();
+      const type = document.getElementById('leadType').value.trim();
+      const budget = document.getElementById('leadBudget').value;
+      const notes = document.getElementById('leadNotes').value.trim();
+      if (!name || !email || !type) {
+        log('validation', 'Lead submission blocked: name, email, and type are required.');
+        alert('Please complete name, email, and type before submitting.');
+        return;
+      }
+      submitLead({ name, email, type, budget, notes });
+      document.getElementById('leadName').value = '';
+      document.getElementById('leadEmail').value = '';
+      document.getElementById('leadType').value = '';
+      document.getElementById('leadNotes').value = '';
+    });
+
+    document.getElementById('seedDemoBtn').addEventListener('click', seedDemoActivity);
+
+    document.getElementById('togglePauseBtn').addEventListener('click', () => {
+      appConfig.paused = !appConfig.paused;
+      log('safety', `Automation ${appConfig.paused ? 'paused' : 'resumed'} by Xavier.`);
+      renderEndpointBoxes();
+      document.getElementById('togglePauseBtn').textContent = appConfig.paused ? 'Resume automation' : 'Pause automation';
+    });
+
+    document.getElementById('toggleAutonomyBtn').addEventListener('click', () => {
+      appConfig.safeAutonomy = !appConfig.safeAutonomy;
+      log('policy', `Safe autonomy mode ${appConfig.safeAutonomy ? 'enabled' : 'disabled'}.`);
+      renderEndpointBoxes();
+    });
+
+    document.querySelectorAll('[data-view-btn]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-view-btn]').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.viewBtn).classList.add('active');
+      });
+    });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+    }
+
+    render();
+  </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
