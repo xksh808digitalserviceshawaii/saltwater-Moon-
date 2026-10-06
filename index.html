@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Saltwater Moon — Sarah Pierce</title>
-<meta name="description" content="Spiritual guidance by Sarah Pierce. Quick Pull $35, Deep Dive $85, Monthly guidance $55/mo. Clarity you can feel.">
+<meta name="description" content="Spiritual guidance by Sarah Pierce. Quick Pull $10, Deep Dive $20, Monthly guidance $25/mo. Clarity you can feel.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -135,8 +135,8 @@
   .lede{color:var(--muted);font-weight:300;font-size:18px;max-width:640px}
 
   .about-grid{display:grid;gap:28px;margin-top:48px}
-  @media(min-width:760px){.about-grid{grid-template-columns:1fr 1fr}}
-  .about-card{
+ate-columns:1fr 1fr}}
+  .about-card{  .
     background:var(--card);border:1px solid var(--card-border);
     border-radius:20px;padding:36px 32px;backdrop-filter:blur(6px);
   }
@@ -157,8 +157,10 @@
     transition:transform .3s ease, border-color .3s ease, box-shadow .3s ease;
   }
   .card:hover{transform:translateY(-6px);border-color:rgba(217,179,108,.55);box-shadow:0 24px 60px rgba(0,0,0,.45)}
+
   .card.featured{border-color:var(--gold);background:linear-gradient(180deg,rgba(217,179,108,.10),rgba(255,255,255,.03))}
-  .card .flag{
+
+  .launch-banner{max-width:640px;margin:18px auto 6px;padding:12px 22px;border-radius:999px;background:linear-gradient(135deg,var(--gold-soft),var(--gold));color:#1a1206;font-size:14px;font-weight:500;letter-spacing:.04em;text-align:center;}.launch-banner strong{font-weight:700;} .card .flag{
     position:absolute;top:-14px;left:50%;transform:translateX(-50%);
     background:linear-gradient(135deg,var(--gold-soft),var(--gold));color:#1a1206;
     font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;
@@ -259,30 +261,31 @@
 
 <section id="offerings">
   <p class="kicker">Offerings</p>
+  
   <h2>Choose your <em>depth.</em></h2>
-  <p class="lede">Three ways in. Every session is personal, private, and done by Sarah herself.</p>
+  <p class="lede">Three ways in. Every session is personal, private, and done by Sarah herself.</p> <div class="launch-banner">&#127769; Launch special &mdash; first 10 bookings get <strong>50% off</strong>: Quick Pull $5 &middot; Deep Dive $10 &middot; Monthly $12.50/mo</div>
   <div class="cards">
     <div class="card">
       <p class="phase">First Quarter</p>
       <h3>Quick Pull</h3>
-      <div class="price">$35</div>
+      <div class="price">$10</div>
       <p>One focused question, one clear pull. Perfect when something's been circling your mind and you need a straight answer.</p>
-      <button class="btn btn-ghost" data-type="Quick Pull — $35">Book Quick Pull</button>
+      <button class="btn btn-ghost" data-type="Quick Pull — $10">Book Quick Pull</button>
     </div>
     <div class="card featured">
       <span class="flag">Most Loved</span>
       <p class="phase">Full Moon</p>
       <h3>Deep Dive</h3>
-      <div class="price">$85</div>
+      <div class="price">$20</div>
       <p>The full session. We go deep on what's weighing on you — love, path, purpose — and leave with direction, not just insight.</p>
-      <button class="btn btn-gold" data-type="Deep Dive — $85">Book Deep Dive</button>
+      <button class="btn btn-gold" data-type="Deep Dive — $20">Book Deep Dive</button>
     </div>
     <div class="card">
       <p class="phase">Every Cycle</p>
       <h3>Monthly</h3>
-      <div class="price">$55<small>/mo</small></div>
+      <div class="price">$25<small>/mo</small></div>
       <p>Ongoing guidance, month after month. For the ones walking through a season and wanting a steady light beside them.</p>
-      <button class="btn btn-ghost" data-type="Monthly — $55/mo">Book Monthly</button>
+      <button class="btn btn-ghost" data-type="Monthly — $25/mo">Book Monthly</button>
     </div>
   </div>
 </section>
@@ -314,9 +317,9 @@
         <div class="field">
           <label for="fType">Session</label>
           <select id="fType" name="type">
-            <option>Quick Pull — $35</option>
-            <option>Deep Dive — $85</option>
-            <option>Monthly — $55/mo</option>
+            <option>Quick Pull — $10</option>
+            <option>Deep Dive — $20</option>
+            <option>Monthly — $25/mo</option>
           </select>
         </div>
         <div class="field">
